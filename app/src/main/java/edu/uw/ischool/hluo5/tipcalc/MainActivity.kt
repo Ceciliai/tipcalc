@@ -8,9 +8,10 @@ import androidx.core.view.WindowInsetsCompat
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
-import java.text.DecimalFormat
 import android.view.View
 import android.widget.*
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 class MainActivity : AppCompatActivity() {
 
@@ -31,7 +32,6 @@ class MainActivity : AppCompatActivity() {
         val buttonTip = findViewById<Button>(R.id.buttonTip)
         val spinnerTipPercentage = findViewById<Spinner>(R.id.spinnerTipPercentage)
 
-
         val tipOptions = arrayOf("10%", "15%", "18%", "20%")
         val tipValues = arrayOf(0.10, 0.15, 0.18, 0.20)
 
@@ -43,21 +43,18 @@ class MainActivity : AppCompatActivity() {
 
         spinnerTipPercentage.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-
                 selectedTipPercentage = tipValues[position]
             }
 
-           override fun onNothingSelected(parent: AdapterView<*>?) {
-                // Do nothing here
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                // Do nothing
             }
         }
 
         buttonTip.isEnabled = false
 
-
         editTextAmount.addTextChangedListener(object : android.text.TextWatcher {
             override fun afterTextChanged(s: android.text.Editable?) {
-
                 buttonTip.isEnabled = !s.isNullOrEmpty() && s.toString().toDoubleOrNull() != null
             }
 
@@ -66,16 +63,21 @@ class MainActivity : AppCompatActivity() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
 
-
         buttonTip.setOnClickListener {
             val amountText = editTextAmount.text.toString()
             val amount = amountText.toDoubleOrNull()
 
             if (amount != null) {
+                // Convert amount and tip percentage to BigDecimal for precise calculation
+                val amountBigDecimal = BigDecimal(amount.toString())
+                val tipPercentageBigDecimal = BigDecimal(selectedTipPercentage.toString())
 
-                val tip = amount * selectedTipPercentage
-                val formattedTip = DecimalFormat("$#.00").format(tip)
+                // Calculate the tip and round it to two decimal places
+                //extra credit
+                val tip = amountBigDecimal.multiply(tipPercentageBigDecimal).setScale(2, RoundingMode.HALF_UP)
+                val formattedTip = "$${tip}"
 
+                // Display the calculated tip in a Toast message
                 Toast.makeText(this, "Tip: $formattedTip", Toast.LENGTH_SHORT).show()
             } else {
                 Toast.makeText(this, "Invalid amount", Toast.LENGTH_SHORT).show()
